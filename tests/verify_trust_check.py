@@ -87,16 +87,24 @@ def main() -> None:
     assert "scripts/github_benchmark_scan.py" in payload["network_policy"]["covered_scripts"], payload["network_policy"]
     script_map = {item["path"]: item for item in payload["scripts"]}
     for internal_module in [
+        "scripts/review_studio_formatting.py",
+        "scripts/review_studio_layout.py",
         "scripts/skill_report_charts.py",
+        "scripts/skill_report_layout.py",
         "scripts/skill_report_metrics.py",
         "scripts/skill_report_model.py",
+        "scripts/yao_cli_config.py",
     ]:
         assert script_map[internal_module]["interface"] == "internal-module", script_map[internal_module]
         assert script_map[internal_module]["interface_declared"], script_map[internal_module]
     warning_text = "\n".join(payload["warnings"])
+    assert "review_studio_formatting.py" not in warning_text, payload["warnings"]
+    assert "review_studio_layout.py" not in warning_text, payload["warnings"]
     assert "skill_report_charts.py" not in warning_text, payload["warnings"]
+    assert "skill_report_layout.py" not in warning_text, payload["warnings"]
     assert "skill_report_metrics.py" not in warning_text, payload["warnings"]
     assert "skill_report_model.py" not in warning_text, payload["warnings"]
+    assert "yao_cli_config.py" not in warning_text, payload["warnings"]
     assert "render_context_reports.py" not in warning_text, payload["warnings"]
     assert "render_social_preview.py" not in warning_text, payload["warnings"]
     assert "Network-capable scripts require bounded host policy" not in warning_text, payload["warnings"]

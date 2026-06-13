@@ -10,6 +10,8 @@ ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "render_review_studio.py"
 sys.path.insert(0, str(ROOT / "scripts"))
 import render_review_studio as review_studio  # noqa: E402
+import review_studio_formatting as review_formatting  # noqa: E402
+import review_studio_layout as review_layout  # noqa: E402
 
 
 def main() -> None:
@@ -353,9 +355,30 @@ def main() -> None:
     assert "人工批准" in html, html[:8200]
     assert "权限批准" in html, html[:9000]
     assert "权限探针" in html, html[:9500]
+    assert "kv-grid" in html, html
+    assert "案例数" in html, html
+    assert "命令执行" in html, html
+    assert "包体哈希" in html, html
+    assert "{&#x27;" not in html, html
+    assert "&#x27;case_count&#x27;" not in html, html
+    assert "&#x27;name&#x27;" not in html, html
     assert "reports/review_waivers.md" in output_json.read_text(encoding="utf-8"), output_json
     assert "upgrade minor declared / minor recommended" in html, html[:8000]
     assert str(ROOT) not in output_json.read_text(encoding="utf-8"), output_json
+    formatted = review_formatting.render_kv_grid(
+        {"case_count": 5, "package_sha256": "abc123"},
+        ["case_count", "package_sha256"],
+        "missing",
+    )
+    assert "kv-grid" in formatted, formatted
+    assert "案例数" in formatted, formatted
+    assert "<code>abc123</code>" in formatted, formatted
+    assert review_formatting.value_text({"case_count": 5}) == "案例数: 5"
+    assert len(review_layout.REVIEW_STUDIO_NAV) == 15, review_layout.REVIEW_STUDIO_NAV
+    assert "position: sticky" in review_layout.review_studio_css(), review_layout.review_studio_css()[:400]
+    assert "#overview" in review_layout.render_review_nav(), review_layout.render_review_nav()
+    assert "审查总览" in review_layout.render_review_nav(), review_layout.render_review_nav()
+    assert review_layout.render_review_nav([]) == ""
     print(json.dumps({"ok": True}, ensure_ascii=False, indent=2))
 
 

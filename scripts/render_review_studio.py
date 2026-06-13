@@ -18,6 +18,9 @@ except ImportError:  # pragma: no cover
     compute_permission_governance_status = None
     trust_script_inventory = None
 
+from review_studio_formatting import registry_package_summary, render_kv_grid
+from review_studio_layout import render_review_nav, review_studio_css
+
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -1076,24 +1079,7 @@ def render_html(report: dict[str, Any]) -> str:
     frontmatter = report["data"]["frontmatter"]
     title = overview.get("display_name") or overview.get("title") or frontmatter.get("name") or manifest.get("name") or "Skill"
     description = overview.get("description") or frontmatter.get("description", "")
-    nav = [
-        ("#overview", "审查总览"),
-        ("#intent", "意图画布"),
-        ("#trigger", "触发实验"),
-        ("#output", "输出实验"),
-        ("#actions", "修复动作"),
-        ("#annotations", "审查批注"),
-        ("#runtime", "运行矩阵"),
-        ("#trust", "信任报告"),
-        ("#permissions", "权限批准"),
-        ("#permission-probes", "权限探针"),
-        ("#atlas", "组合治理"),
-        ("#telemetry", "运营回路"),
-        ("#waivers", "人工批准"),
-        ("#registry", "注册审计"),
-        ("#release", "发布路线"),
-    ]
-    nav_html = "".join(f"<a href='{href}'>{label}</a>" for href, label in nav)
+    nav_html = render_review_nav()
     gates_html = render_gate_list(gates)
     metrics_html = render_insights(insights)
     blockers_html = render_issue_list("阻断事项", blockers)
@@ -1119,6 +1105,95 @@ def render_html(report: dict[str, Any]) -> str:
     )
     registry_package = report["data"]["registry"].get("package", {})
     package_summary = report["data"]["package_verification"].get("summary", {})
+    atlas_panel = render_kv_grid(
+        atlas_summary,
+        [
+            "skill_count",
+            "actionable_skill_count",
+            "actionable_route_collision_count",
+            "actionable_owner_gap_count",
+            "actionable_stale_count",
+            "non_actionable_issue_count",
+        ],
+        "skill atlas summary missing",
+    )
+    output_panel = render_kv_grid(
+        output_summary,
+        ["case_count", "with_skill_pass_rate", "baseline_pass_rate", "delta", "gate_pass", "failure_count"],
+        "output eval scorecard missing",
+    )
+    execution_panel = render_kv_grid(
+        output_execution_summary,
+        [
+            "variant_run_count",
+            "command_executed_count",
+            "model_executed_count",
+            "recorded_fixture_count",
+            "timing_observed_count",
+            "token_estimated_count",
+        ],
+        "output execution report missing",
+    )
+    blind_panel = render_kv_grid(
+        output_blind_summary,
+        ["pair_count", "answer_key_separate", "with_skill_hidden_count"],
+        "blind A/B review pack missing",
+    )
+    review_panel = render_kv_grid(
+        output_review_summary,
+        ["pair_count", "judgment_count", "pending_count", "agreement_count", "disagreement_count", "invalid_decision_count"],
+        "review adjudication report missing",
+    )
+    conformance_panel = render_kv_grid(
+        conformance_summary,
+        ["target_count", "pass_count", "fail_count", "warning_count", "failure_count"],
+        "runtime conformance matrix missing",
+    )
+    compiled_panel = render_kv_grid(
+        compiled_summary,
+        ["target_count", "pass_count", "warn_count", "block_count", "failure_count"],
+        "compiled target report missing",
+    )
+    trust_panel = render_kv_grid(
+        trust_summary,
+        ["secret_findings", "script_count", "network_script_count", "help_smoke_failed_count", "package_sha256"],
+        "security trust report missing",
+    )
+    runtime_boundary_panel = render_kv_grid(
+        runtime_permissions_summary,
+        ["target_count", "pass_count", "native_enforcement_count", "metadata_fallback_count", "residual_risk_count", "failure_count"],
+        "runtime permission probe summary missing",
+    )
+    adoption_panel = render_kv_grid(
+        adoption_summary,
+        ["event_count", "adoption_rate", "missed_trigger_count", "bad_output_count", "risk_band"],
+        "no adoption drift summary",
+    )
+    waiver_panel = render_kv_grid(
+        waiver_summary,
+        ["waiver_count", "active_count", "expired_count", "invalid_count", "covered_gate_count"],
+        "no review waiver summary",
+    )
+    registry_panel = render_kv_grid(
+        registry_package_summary(registry_package),
+        [
+            "name",
+            "version",
+            "maturity",
+            "owner",
+            "license",
+            "trust_level",
+            "targets",
+            "compatibility_pass_count",
+            "archive_sha256",
+        ],
+        "registry package metadata missing",
+    )
+    package_panel = render_kv_grid(
+        package_summary,
+        ["target_count", "adapter_count", "archive_present", "archive_entry_count", "failure_count", "warning_count", "archive_sha256"],
+        "package verification missing",
+    )
     evidence_html = "".join(
         f"<li><strong>{html.escape(key)}</strong><span>{html.escape(value)}</span></li>"
         for key, value in report["evidence_paths"].items()
@@ -1130,204 +1205,7 @@ def render_html(report: dict[str, Any]) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(str(title))} Review Studio 2.0</title>
   <style>
-    :root {{
-      --ink: #1B365D;
-      --text: #24201d;
-      --muted: #746d66;
-      --line: #e7ded2;
-      --soft: #faf8f5;
-      --pass: #1e6b52;
-      --warn: #9a6718;
-      --block: #9b2c2c;
-    }}
-    * {{ box-sizing: border-box; }}
-    html {{ scroll-behavior: smooth; }}
-    body {{
-      margin: 0;
-      background: #ffffff;
-      color: var(--text);
-      font-family: Georgia, "Times New Roman", "Songti SC", serif;
-      line-height: 1.58;
-    }}
-    nav {{
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      display: flex;
-      gap: 4px;
-      justify-content: center;
-      flex-wrap: wrap;
-      padding: 10px 16px;
-      background: rgba(255,255,255,0.94);
-      border-bottom: 1px solid var(--line);
-      backdrop-filter: blur(10px);
-    }}
-    nav a {{
-      color: var(--ink);
-      text-decoration: none;
-      font-size: 14px;
-      padding: 7px 10px;
-      border-radius: 6px;
-    }}
-    nav a:hover {{ background: var(--soft); }}
-    main {{ max-width: 1180px; margin: 0 auto; padding: 44px 28px 76px; }}
-    header {{ border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 28px; }}
-    .eyebrow {{ color: var(--ink); font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }}
-    h1, h2, h3 {{ color: var(--text); font-weight: 500; margin: 0; letter-spacing: 0; }}
-    h1 {{ font-size: clamp(34px, 5vw, 64px); line-height: 1.03; max-width: 920px; margin-top: 12px; }}
-    h2 {{ font-size: 30px; margin-bottom: 14px; }}
-    h3 {{ font-size: 19px; }}
-    p {{ margin: 0; }}
-    .lede {{ max-width: 820px; color: var(--muted); font-size: 20px; margin-top: 18px; }}
-    .decision {{
-      display: inline-flex;
-      align-items: baseline;
-      gap: 12px;
-      margin-top: 24px;
-      padding: 12px 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      color: var(--ink);
-      background: var(--soft);
-    }}
-    .decision strong {{ font-size: 28px; }}
-    section {{ padding: 30px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 76px; }}
-    .metrics, .gates {{
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 14px;
-    }}
-    .gates {{ grid-template-columns: repeat(4, minmax(0, 1fr)); }}
-    .metric, .gate {{
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 16px;
-      background: #fff;
-      min-width: 0;
-    }}
-    .metric span, .gate span {{ display: block; color: var(--muted); font-size: 13px; }}
-    .metric strong {{ display: block; color: var(--ink); font-size: 34px; line-height: 1.1; margin: 8px 0; }}
-    .metric p, .gate p, .gate footer, .issues span, .evidence span {{ color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }}
-    .gate {{ display: flex; flex-direction: column; gap: 10px; }}
-    .gate.pass {{ border-top: 4px solid var(--pass); }}
-    .gate.warn {{ border-top: 4px solid var(--warn); }}
-    .gate.block {{ border-top: 4px solid var(--block); }}
-    .gate footer {{ border-top: 1px solid var(--line); padding-top: 10px; }}
-    a {{ color: var(--ink); }}
-    .twocol {{
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 22px;
-      align-items: start;
-    }}
-    .panel {{
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 18px;
-      background: #fff;
-    }}
-    .panel p {{ color: var(--muted); }}
-    .issues, .evidence {{
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: grid;
-      gap: 12px;
-    }}
-    .issues li, .evidence li {{
-      border-left: 3px solid var(--line);
-      padding-left: 12px;
-      display: grid;
-      gap: 3px;
-    }}
-    .muted {{ color: var(--muted); }}
-    .actions-grid {{
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }}
-    .annotations-grid {{
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }}
-    .action-card {{
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 18px;
-      background: #fff;
-      display: grid;
-      gap: 10px;
-      min-width: 0;
-    }}
-    .action-card.warn {{ border-left: 4px solid var(--warn); }}
-    .action-card.block {{ border-left: 4px solid var(--block); }}
-    .annotation-card {{
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 18px;
-      background: #fff;
-      display: grid;
-      gap: 10px;
-      min-width: 0;
-    }}
-    .annotation-card.warning {{ border-left: 4px solid var(--warn); }}
-    .annotation-card.blocker {{ border-left: 4px solid var(--block); }}
-    .annotation-card.resolved {{ opacity: .72; }}
-    .action-card span,
-    .annotation-card span,
-    .action-card small,
-    .annotation-card small,
-    .action-card footer,
-    .annotation-card footer,
-    .action-card dd {{
-      color: var(--muted);
-      font-size: 14px;
-      overflow-wrap: anywhere;
-    }}
-    .annotation-card dd {{ color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }}
-    .action-card dl, .annotation-card dl {{
-      display: grid;
-      grid-template-columns: 80px minmax(0, 1fr);
-      gap: 6px 10px;
-      margin: 0;
-    }}
-    .action-card dt, .annotation-card dt {{ color: var(--ink); font-size: 14px; }}
-    .action-card dd, .annotation-card dd {{ margin: 0; }}
-    .source-ref-list {{
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: grid;
-      gap: 6px;
-    }}
-    .source-ref-list li {{
-      display: grid;
-      gap: 2px;
-      min-width: 0;
-      padding: 8px 0 0;
-      border-top: 1px solid var(--line);
-    }}
-    .source-ref-list a,
-    .source-ref-list span {{
-      overflow-wrap: anywhere;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
-    }}
-    .source-ref-list small {{
-      font-size: 12px;
-      color: var(--muted);
-    }}
-    code {{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
-    }}
-    @media (max-width: 980px) {{
-      .metrics, .gates, .twocol, .actions-grid, .annotations-grid {{ grid-template-columns: 1fr; }}
-      main {{ padding: 32px 18px 60px; }}
-      nav {{ justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }}
-      nav a {{ flex: 0 0 auto; }}
-    }}
+{review_studio_css()}
   </style>
 </head>
 <body>
@@ -1383,17 +1261,17 @@ def render_html(report: dict[str, Any]) -> str:
 
     <section id="trigger" class="twocol">
       <div class="panel"><h2>触发实验</h2><p>{html.escape(gates[1]['detail'])}</p></div>
-      <div class="panel"><h2>组合治理</h2><p>{html.escape(str(atlas_summary))}</p></div>
+      <div class="panel"><h2>组合治理</h2>{atlas_panel}</div>
     </section>
 
     <section id="output" class="twocol">
-      <div class="panel"><h2>输出实验</h2><p>{html.escape(str(output_summary))}</p></div>
-      <div class="panel"><h2>执行证据</h2><p>{html.escape(str(output_execution_summary or 'output execution report missing'))}</p></div>
+      <div class="panel"><h2>输出实验</h2>{output_panel}</div>
+      <div class="panel"><h2>执行证据</h2>{execution_panel}</div>
     </section>
 
     <section class="twocol">
-      <div class="panel"><h2>盲评包</h2><p>{html.escape(str(output_blind_summary or 'blind A/B review pack missing'))}</p></div>
-      <div class="panel"><h2>审定报告</h2><p>{html.escape(str(output_review_summary or 'review adjudication report missing'))}</p></div>
+      <div class="panel"><h2>盲评包</h2>{blind_panel}</div>
+      <div class="panel"><h2>审定报告</h2>{review_panel}</div>
     </section>
 
     <section class="twocol">
@@ -1407,8 +1285,8 @@ def render_html(report: dict[str, Any]) -> str:
     </section>
 
     <section id="runtime" class="twocol">
-      <div class="panel"><h2>运行矩阵</h2><p>{html.escape(str(conformance_summary))}</p></div>
-      <div class="panel"><h2>目标编译</h2><p>{html.escape(str(compiled_summary or 'compiled target report missing'))}</p></div>
+      <div class="panel"><h2>运行矩阵</h2>{conformance_panel}</div>
+      <div class="panel"><h2>目标编译</h2>{compiled_panel}</div>
     </section>
 
     <section class="twocol">
@@ -1417,7 +1295,7 @@ def render_html(report: dict[str, Any]) -> str:
     </section>
 
     <section id="trust" class="twocol">
-      <div class="panel"><h2>信任报告</h2><p>{html.escape(str(trust_summary))}</p></div>
+      <div class="panel"><h2>信任报告</h2>{trust_panel}</div>
       <div class="panel"><h2>安全边界</h2><p>高风险 secret、远程 inline execution、缺失依赖策略或无法解释的脚本接口应阻断 governed release。</p></div>
     </section>
 
@@ -1428,7 +1306,7 @@ def render_html(report: dict[str, Any]) -> str:
 
     <section id="permission-probes" class="twocol">
       <div class="panel"><h2>权限探针</h2><p>{html.escape(gate_details.get('permission-runtime', 'runtime permission probes missing'))}</p></div>
-      <div class="panel"><h2>运行边界</h2><p>{html.escape(str(runtime_permissions_summary or 'runtime permission probe summary missing'))}</p></div>
+      <div class="panel"><h2>运行边界</h2>{runtime_boundary_panel}</div>
     </section>
 
     <section id="atlas" class="twocol">
@@ -1438,22 +1316,22 @@ def render_html(report: dict[str, Any]) -> str:
 
     <section id="telemetry" class="twocol">
       <div class="panel"><h2>运营回路</h2><p>{html.escape(gate_details.get('operations-loop', 'adoption drift report missing'))}</p></div>
-      <div class="panel"><h2>漂移信号</h2><p>{html.escape(str(adoption_summary or 'no adoption drift summary'))}</p></div>
+      <div class="panel"><h2>漂移信号</h2>{adoption_panel}</div>
     </section>
 
     <section id="waivers" class="twocol">
       <div class="panel"><h2>人工批准</h2><p>{html.escape(gate_details.get('review-waivers', 'review waiver ledger missing'))}</p></div>
-      <div class="panel"><h2>批准台账</h2><p>{html.escape(str(waiver_summary or 'no review waiver summary'))}</p></div>
+      <div class="panel"><h2>批准台账</h2>{waiver_panel}</div>
     </section>
 
     <section id="registry" class="twocol">
       <div class="panel"><h2>注册审计</h2><p>{html.escape(gate_details.get('registry-audit', 'registry audit missing'))}</p></div>
-      <div class="panel"><h2>包体元数据</h2><p>{html.escape(str(registry_package))}</p></div>
+      <div class="panel"><h2>包体元数据</h2>{registry_panel}</div>
     </section>
 
     <section id="release" class="twocol">
       <div class="panel"><h2>发布路线</h2><p>{html.escape(gate_details.get('release-notes', 'release notes missing'))}</p></div>
-      <div class="panel"><h2>包体验证</h2><p>{html.escape(str(package_summary or 'package verification missing'))}</p></div>
+      <div class="panel"><h2>包体验证</h2>{package_panel}</div>
     </section>
   </main>
 </body>

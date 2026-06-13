@@ -9,6 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CLI = ROOT / "scripts" / "yao.py"
 BENCHMARK_FIXTURE_DIR = ROOT / "tests" / "fixtures" / "github_benchmark_scan"
+sys.path.insert(0, str(ROOT / "scripts"))
+import yao_cli_config  # noqa: E402
 
 
 def run(*args: str, input_text: str | None = None) -> dict:
@@ -36,6 +38,11 @@ def main() -> None:
     tmp_root.mkdir(parents=True, exist_ok=True)
     remote_version = tmp_root / "remote-version.txt"
     remote_version.write_text("9.9.9\n", encoding="utf-8")
+    assert yao_cli_config.resolve_target("root")["title"] == "Root Description Optimization"
+    assert yao_cli_config.resolve_promotion_target("root") == "yao-meta-skill"
+    assert yao_cli_config.infer_archetype("Standardize team review workflow.", "")[0] == "production"
+    assert yao_cli_config.infer_archetype("Govern release policy.", "")[0] == "governed"
+    assert "--entry" in yao_cli_config.baseline_compare_args()
 
     init_result = run("init", "cli-demo-skill", "--description", "CLI demo skill.", "--output-dir", str(tmp_root))
     assert init_result["ok"], init_result

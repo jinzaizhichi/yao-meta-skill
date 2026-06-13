@@ -7,6 +7,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CLI = ROOT / "scripts" / "yao.py"
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from skill_report_layout import render_language_switch, render_report_nav, skill_overview_css, skill_overview_script
+from skill_report_model import REPORT_NAV_V2
 
 
 def run(*args: str) -> dict:
@@ -26,6 +30,30 @@ def run(*args: str) -> dict:
 
 
 def main() -> None:
+    nav_contract = render_report_nav(REPORT_NAV_V2)
+    assert nav_contract.count("<a ") == 9, nav_contract
+    assert '#overview' in nav_contract, nav_contract
+    assert ">技能概述</span>" in nav_contract, nav_contract
+    assert ">Overview</span>" in nav_contract, nav_contract
+    assert render_report_nav([]) == ""
+
+    language_switch_contract = render_language_switch()
+    assert 'data-set-lang="zh-CN"' in language_switch_contract, language_switch_contract
+    assert 'data-set-lang="en"' in language_switch_contract, language_switch_contract
+    assert 'aria-pressed="true"' in language_switch_contract, language_switch_contract
+
+    css_contract = skill_overview_css()
+    assert "position: sticky" in css_contract, css_contract[:1200]
+    assert ".report-nav {" in css_contract, css_contract[:3200]
+    assert "background: #ffffff" in css_contract, css_contract[:1600]
+    assert ".metrics-lead" in css_contract, css_contract[:7000]
+    assert "@media (max-width: 980px)" in css_contract, css_contract[-2200:]
+
+    script_contract = skill_overview_script()
+    assert 'setLanguage("zh-CN")' in script_contract, script_contract[-1000:]
+    assert "scaleX(" in script_contract, script_contract
+    assert "aria-current" in script_contract, script_contract
+
     tmp_root = ROOT / "tests" / "tmp_skill_overview"
     if tmp_root.exists():
         subprocess.run(["rm", "-rf", str(tmp_root)], check=True)

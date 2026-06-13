@@ -2,9 +2,9 @@
   "ok": true,
   "skill_dir": ".",
   "summary": {
-    "scanned_files": 146,
-    "script_count": 62,
-    "internal_module_count": 3,
+    "scanned_files": 150,
+    "script_count": 66,
+    "internal_module_count": 7,
     "secret_findings": 0,
     "dependency_files": [
       "requirements-ci.txt"
@@ -22,8 +22,8 @@
     "help_smoke_failed_count": 0,
     "interactive_script_count": 0,
     "package_hash_scope": "source-contract-without-generated-reports",
-    "package_hash_file_count": 146,
-    "package_sha256": "9f1d53dbaeb1c90c80d7ffbbc1d10473e50b8032acda68332fbae551bb246abe"
+    "package_hash_file_count": 150,
+    "package_sha256": "742dc905b0d221c4f336e741d168861edaf7b75e97fe1e89f7d454c1cabf928f"
   },
   "failures": [],
   "warnings": [],
@@ -687,6 +687,34 @@
       "network_hosts": []
     },
     {
+      "path": "scripts/review_studio_formatting.py",
+      "interface": "internal-module",
+      "interface_declared": true,
+      "interface_reason": "Imported by render_review_studio.py to format report dictionaries as audit UI panels.",
+      "has_argparse": false,
+      "has_main_guard": false,
+      "uses_input": false,
+      "uses_network": false,
+      "uses_file_write": false,
+      "uses_subprocess": false,
+      "network_urls": [],
+      "network_hosts": []
+    },
+    {
+      "path": "scripts/review_studio_layout.py",
+      "interface": "internal-module",
+      "interface_declared": true,
+      "interface_reason": "Imported by render_review_studio.py to keep Review Studio layout and CSS out of gate logic.",
+      "has_argparse": false,
+      "has_main_guard": false,
+      "uses_input": false,
+      "uses_network": false,
+      "uses_file_write": false,
+      "uses_subprocess": false,
+      "network_urls": [],
+      "network_hosts": []
+    },
+    {
       "path": "scripts/run_conformance_suite.py",
       "interface": "cli",
       "interface_declared": false,
@@ -775,6 +803,20 @@
       "interface": "internal-module",
       "interface_declared": true,
       "interface_reason": "Imported by render_skill_overview.py to render inline SVG report charts.",
+      "has_argparse": false,
+      "has_main_guard": false,
+      "uses_input": false,
+      "uses_network": false,
+      "uses_file_write": false,
+      "uses_subprocess": false,
+      "network_urls": [],
+      "network_hosts": []
+    },
+    {
+      "path": "scripts/skill_report_layout.py",
+      "interface": "internal-module",
+      "interface_declared": true,
+      "interface_reason": "Imported by render_skill_overview.py to keep overview report layout and CSS out of data rendering.",
       "has_argparse": false,
       "has_main_guard": false,
       "uses_input": false,
@@ -909,6 +951,20 @@
       "uses_subprocess": true,
       "network_urls": [],
       "network_hosts": []
+    },
+    {
+      "path": "scripts/yao_cli_config.py",
+      "interface": "internal-module",
+      "interface_declared": true,
+      "interface_reason": "Imported by yao.py for CLI target maps and side-effect-free shaping helpers.",
+      "has_argparse": false,
+      "has_main_guard": false,
+      "uses_input": false,
+      "uses_network": false,
+      "uses_file_write": false,
+      "uses_subprocess": false,
+      "network_urls": [],
+      "network_hosts": []
     }
   ],
   "dependencies": {
@@ -944,7 +1000,7 @@
     "checked_count": 59,
     "passed_count": 59,
     "failed_count": 0,
-    "skipped_count": 3,
+    "skipped_count": 7,
     "failed_scripts": [],
     "results": [
       {
@@ -1540,7 +1596,19 @@
     ],
     "skipped": [
       {
+        "path": "scripts/review_studio_formatting.py",
+        "reason": "internal module"
+      },
+      {
+        "path": "scripts/review_studio_layout.py",
+        "reason": "internal module"
+      },
+      {
         "path": "scripts/skill_report_charts.py",
+        "reason": "internal module"
+      },
+      {
+        "path": "scripts/skill_report_layout.py",
         "reason": "internal module"
       },
       {
@@ -1549,6 +1617,10 @@
       },
       {
         "path": "scripts/skill_report_model.py",
+        "reason": "internal module"
+      },
+      {
+        "path": "scripts/yao_cli_config.py",
         "reason": "internal module"
       }
     ]
