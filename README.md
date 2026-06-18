@@ -10,9 +10,50 @@
 
 `YAO` stands for `Yielding AI Outcomes` — the goal is not to generate more prompt text, but to produce reusable AI assets and real operational outcomes.
 
-`yao-meta-skill` is a lightweight but rigorous system for creating, evaluating, packaging, and governing reusable agent skills.
+`yao-meta-skill` creates, evaluates, packages, and governs reusable agent skills. The 1.0 line focused on turning repeated workflows into installable, readable, cross-platform skill packages. The 2.0 line expands that factory into a Skill OS: a governed system for modeling a skill once, compiling it for multiple targets, testing its behavior, reviewing its release evidence, and tracking the next iteration.
 
-[Quick Start](#quick-start) · [Examples](examples/README.md) · [Evals](evals/README.md) · [Failure Library](failures/README.md) · [Method Doctrine](#method-doctrine)
+[Quick Start](#quick-start) · [Skill OS 2.0](#skill-os-20-upgrade) · [1.0 vs 2.0](#from-10-to-20) · [Benchmark](#weighted-quality-benchmark) · [Examples](examples/README.md) · [Evals](evals/README.md) · [Failure Library](failures/README.md) · [Method Doctrine](#method-doctrine)
+
+## Skill OS 2.0 Upgrade
+
+Skill OS 2.0 keeps the original promise of `yao-meta-skill`, but makes the package lifecycle more explicit. Instead of stopping at `SKILL.md`, it adds a semantic contract, target compilers, evaluation evidence, release gates, and operation reports around the skill.
+
+- **Skill IR**: a platform-neutral intermediate representation for intent, triggers, inputs, outputs, boundaries, references, and expected artifacts.
+- **Target compilers and adapters**: generated surfaces for OpenAI, Claude, generic agent skills, Agent Skills compatible packages, and VS Code-oriented workflows.
+- **Output Eval Lab**: trigger checks, output assertions, execution evidence, timing and token evidence, benchmark reproducibility, blind-review packs, answer keys, and adjudication reports.
+- **Review Studio 2.0**: a single HTML gate page for intent, triggers, output eval, context cost, runtime checks, trust, Skill Atlas signals, adoption drift, waivers, annotations, release evidence, warnings, blockers, and fix actions.
+- **Evidence and release governance**: evidence consistency checks, package verification, install simulation, runtime permission probes, world-class evidence intake, world-class ledger, operator runbook, and public claim guard.
+- **SkillOps loop**: metadata-only adoption drift, telemetry hooks, adaptive proposals, daily and weekly curator reports, and portfolio-level drift signals.
+
+Current posture: the repository is ready for beta and external testing, while stronger public "world-class" claims remain evidence-gated. Provider-backed production evidence, human blind-review evidence, native permission execution, and real-client telemetry are tracked as separate evidence tasks instead of being treated as completed work.
+
+See the companion artifacts:
+
+- [Visual 1.0 vs 2.0 comparison report](.previews/yao-meta-skill-2-comparison/index.html)
+- [Chinese desktop preview](.previews/yao-meta-skill-2-comparison/yao-meta-skill-1-vs-2.png)
+- [English desktop preview](.previews/yao-meta-skill-2-comparison/yao-meta-skill-1-vs-2-en.png)
+
+## From 1.0 to 2.0
+
+| Dimension | 1.0 focus | 2.0 upgrade |
+| --- | --- | --- |
+| Product role | Create, refactor, evaluate, and package reusable skills. | Govern the full lifecycle of a skill: creation, compilation, evaluation, review, release, telemetry, and iteration. |
+| Architecture | `SKILL.md`, `agents/interface.yaml`, manifest files, and report artifacts. | Skill IR, target compilers, adapters, gate contracts, evidence ledgers, release locks, and action-oriented review pages. |
+| Cross-platform delivery | OpenAI, Claude, and generic package targets. | Adds broader Agent Skills and VS Code-oriented compatibility, with registry-readable compatibility records. |
+| Quality model | Trigger and structure checks plus report-based review. | Output eval, benchmark reproducibility, execution evidence, failure disclosure, blind-review packs, and evidence consistency checks. |
+| Report experience | Overview HTML and first-pass review pages. | Bilingual Skill Overview v2, Review Studio 2.0, reviewer annotations, action cards, charts, and audit-oriented report contracts. |
+| Release boundary | Package output with basic validation. | Package verification, install simulation, runtime permission probes, release locks, public claim guard, and operator runbooks. |
+| Operating loop | Manual feedback and local iteration. | Adoption drift, metadata telemetry, SkillOps reports, adaptive proposals, and portfolio-level drift detection. |
+
+## 2.0 Use Cases
+
+- **Create a new skill from repeated work**: start with a workflow note, prompt set, transcript, runbook, or document pattern, then generate a package with a lean entrypoint, explicit inputs and outputs, references, reports, and the lightest justified gates.
+- **Upgrade a personal skill into a team asset**: add interface contracts, manifests, target adapters, trust checks, output evals, reviewer waivers, release notes, and Review Studio evidence before other people depend on the skill.
+- **Prepare a skill for beta release**: run package verification, install simulation, compatibility checks, runtime permission probes, and evidence consistency checks, then separate beta readiness from stronger public claims.
+- **Keep a skill useful after release**: use metadata-only telemetry, adoption drift, feedback logs, SkillOps reports, and adaptive proposals to decide whether the next move should be documentation, an eval, a skill patch, or a governance update.
+- **Compare with other meta-skill approaches**: keep Anthropic/OpenAI-style conversational creation and lean instruction writing where they fit, then use `yao-meta-skill` when the package needs evidence, portability, release gates, and repeatable maintenance.
+
+## Capability Surface
 
 It turns rough workflows, transcripts, prompts, notes, and runbooks into reusable skill packages with:
 
@@ -57,23 +98,30 @@ It turns rough workflows, transcripts, prompts, notes, and runbooks into reusabl
 
 ## Architecture
 
-Hero view: turn messy operational input into a governed, reusable skill package through one compact flow.
+Hero view: Skill OS 2.0 turns messy operational input into a governed, reusable skill package through a model, compile, evaluate, release, and operate loop.
 
 ```mermaid
 flowchart LR
-    A["Inputs<br/>workflow / prompt / transcript / docs / notes"] --> B["Route<br/>SKILL.md"]
-    B --> C["Design<br/>method + gates"]
-    C --> D["Run<br/>create / validate / eval / promote"]
-    D --> E["Outputs<br/>skill package + reports + adapters"]
+    A["Inputs<br/>workflow / prompt / transcript / docs / notes"] --> B["Intent model<br/>job / outputs / exclusions / standards"]
+    B --> C["Skill IR<br/>trigger / contracts / resources / evidence"]
+    C --> D["Skill package<br/>SKILL.md / references / scripts / reports"]
+    C --> E["Target compilers<br/>OpenAI / Claude / generic / Agent Skills / VS Code"]
+    D --> F["Eval Lab<br/>trigger / output / benchmark / runtime"]
+    E --> F
+    F --> G["Review Studio<br/>gates / warnings / actions / waivers"]
+    G --> H["Release boundary<br/>package verification / install simulation / claim guard"]
+    H --> I["SkillOps loop<br/>feedback / adoption drift / next iteration"]
+    I --> B
 ```
 
 Read it in 10 seconds:
 
-- **Inputs**: start from rough operational material.
-- **Route**: define boundary and trigger in a lean `SKILL.md`.
-- **Design**: choose the right archetype, gates, and resource split.
-- **Run**: use the unified CLI to build, validate, optimize, and promote.
-- **Outputs**: ship a reusable skill plus evidence, governance signals, and portability artifacts.
+- **Inputs**: start from rough operational material instead of a polished spec.
+- **Intent model**: make the job, outputs, exclusions, constraints, and standards explicit before generating files.
+- **Skill IR**: keep the semantic contract separate from any single platform format.
+- **Package and compile**: generate the lean skill package and the target-specific adapters from the same source model.
+- **Evaluate and review**: turn trigger behavior, output quality, runtime checks, and trust signals into reviewable evidence.
+- **Release and operate**: publish only within the current evidence boundary, then feed adoption drift and reviewer feedback into the next iteration.
 
 ## Weighted Quality Benchmark
 
