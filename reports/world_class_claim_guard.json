@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
   "ok": true,
-  "generated_at": "2026-06-20",
+  "generated_at": "2026-06-21",
   "skill_dir": ".",
   "summary": {
     "ledger_ready_to_claim_world_class": false,
     "ledger_pending_count": 4,
-    "claim_surface_count": 175,
-    "json_claim_surface_count": 85,
-    "metadata_claim_surface_count": 86,
-    "package_claim_surface_count": 10,
+    "claim_surface_count": 184,
+    "json_claim_surface_count": 91,
+    "metadata_claim_surface_count": 92,
+    "package_claim_surface_count": 17,
     "violation_count": 0,
     "overclaim_guard_active": true,
     "decision": "claim-guard-pass-evidence-pending"
@@ -52,6 +52,34 @@
     },
     {
       "path": "agents/interface.yaml",
+      "violation_count": 0
+    },
+    {
+      "path": "dist/manifest.json",
+      "violation_count": 0
+    },
+    {
+      "path": "dist/targets/claude/README.md",
+      "violation_count": 0
+    },
+    {
+      "path": "dist/targets/claude/adapter.json",
+      "violation_count": 0
+    },
+    {
+      "path": "dist/targets/generic/adapter.json",
+      "violation_count": 0
+    },
+    {
+      "path": "dist/targets/openai/adapter.json",
+      "violation_count": 0
+    },
+    {
+      "path": "dist/targets/vscode/README.md",
+      "violation_count": 0
+    },
+    {
+      "path": "dist/targets/vscode/adapter.json",
       "violation_count": 0
     },
     {
@@ -600,6 +628,14 @@
     },
     {
       "path": "reports/skillops/daily/2026-06-20.md",
+      "violation_count": 0
+    },
+    {
+      "path": "reports/skillops/daily/2026-06-21.json",
+      "violation_count": 0
+    },
+    {
+      "path": "reports/skillops/daily/2026-06-21.md",
       "violation_count": 0
     },
     {

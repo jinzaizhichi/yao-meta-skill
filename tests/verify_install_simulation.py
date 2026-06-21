@@ -105,6 +105,7 @@ def main() -> None:
     assert payload["summary"]["entrypoint_loaded"], payload
     assert payload["summary"]["manifest_loaded"], payload
     assert payload["summary"]["interface_loaded"], payload
+    assert payload["summary"]["nested_skill_entry_count"] == 0, payload
     assert payload["summary"]["adapter_count"] == 4, payload
     assert payload["summary"]["installer_permission_enforced_count"] == 12, payload
     assert payload["summary"]["installer_permission_failure_count"] == 0, payload
@@ -113,6 +114,7 @@ def main() -> None:
     assert not payload["failures"], payload
     valid_markdown = (TMP / "install_simulation.md").read_text(encoding="utf-8")
     assert "Install Simulation" in valid_markdown
+    assert "Nested SKILL.md entries" in valid_markdown
     assert "Installer permissions enforced" in valid_markdown
 
     with tempfile.TemporaryDirectory(prefix="renamed-install-root-") as temp_root:
@@ -146,6 +148,17 @@ def main() -> None:
     assert policy_gap_payload["summary"]["installer_permission_enforced_count"] == 11, policy_gap_payload
     assert policy_gap_payload["summary"]["installer_permission_failure_count"] >= 1, policy_gap_payload
     assert any("vscode capability network has target enforcement note" in item for item in policy_gap_payload["failures"]), policy_gap_payload
+
+    nested_skill_dir = TMP / "nested-skill-dist"
+    shutil.copytree(valid_dir, nested_skill_dir)
+    with zipfile.ZipFile(nested_skill_dir / "yao-meta-skill.zip", "a", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("yao-meta-skill/tests/fixtures/broken/SKILL.md", "---\nname: broken\n---\n")
+    nested_skill = simulate(nested_skill_dir, TMP / "nested_skill.json", TMP / "nested_skill.md")
+    nested_skill_payload = nested_skill["payload"]
+    assert nested_skill["returncode"] == 2, nested_skill
+    assert not nested_skill_payload["ok"], nested_skill_payload
+    assert nested_skill_payload["summary"]["nested_skill_entry_count"] == 1, nested_skill_payload
+    assert any("Installed package exposes only the root SKILL.md entrypoint" in item for item in nested_skill_payload["failures"]), nested_skill_payload
 
     unsafe_dir = TMP / "unsafe-dist"
     shutil.copytree(valid_dir, unsafe_dir)

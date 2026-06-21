@@ -1,15 +1,16 @@
 {
   "ok": true,
   "schema_version": "2.0",
-  "generated_at": "2026-06-17",
+  "generated_at": "2026-06-21",
   "skill_dir": ".",
   "package_dir": "dist",
   "summary": {
     "target_count": 4,
     "adapter_count": 4,
     "archive_present": true,
-    "archive_sha256": "7db44f059844b71930ea8194a72ba1a316116ca970620de5550d60616e8f23c2",
-    "archive_entry_count": 689,
+    "archive_sha256": "c56a8519244c0bc8ec17c92d4641c832629cc059f4b51fe177a2c039515253a7",
+    "archive_entry_count": 580,
+    "nested_skill_entry_count": 0,
     "failure_count": 0,
     "warning_count": 0
   },
@@ -613,6 +614,11 @@
       "id": "archive-entry-yao-meta-skill/agents/interface.yaml",
       "status": "pass",
       "detail": "Archive contains yao-meta-skill/agents/interface.yaml"
+    },
+    {
+      "id": "archive-single-skill-entrypoint",
+      "status": "pass",
+      "detail": "Archive exposes only the root SKILL.md entrypoint"
     },
     {
       "id": "archive-excludes-generated",

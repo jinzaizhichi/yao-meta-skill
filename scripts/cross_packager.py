@@ -258,6 +258,8 @@ def should_skip_archive_path(rel_path: Path) -> bool:
     parts = rel_path.parts
     if any(part in EXCLUDED_ARCHIVE_PARTS for part in parts):
         return True
+    if rel_path.name == "SKILL.md" and parts != ("SKILL.md",):
+        return True
     if parts == ("reports", "telemetry_events.jsonl"):
         return True
     if parts and parts[0] == "tests" and any(part.startswith("tmp") for part in parts[1:]):

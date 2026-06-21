@@ -91,8 +91,12 @@ def main() -> None:
     assert payload["summary"]["adapter_count"] == 4, payload
     assert payload["summary"]["archive_present"], payload
     assert payload["summary"]["archive_sha256"], payload
+    assert payload["summary"]["nested_skill_entry_count"] == 0, payload
     assert not payload["failures"], payload
     assert (TMP / "package_verification.md").exists(), TMP
+    with zipfile.ZipFile(valid_dir / "yao-meta-skill.zip") as archive:
+        skill_entries = sorted(name for name in archive.namelist() if name.endswith("/SKILL.md"))
+    assert skill_entries == ["yao-meta-skill/SKILL.md"], skill_entries
 
     with tempfile.TemporaryDirectory(prefix="renamed-package-root-") as temp_root:
         renamed_root = Path(temp_root) / "checkout-alias"
@@ -108,8 +112,19 @@ def main() -> None:
         with zipfile.ZipFile(renamed_dir / "yao-meta-skill.zip") as archive:
             names = set(archive.namelist())
         assert "yao-meta-skill/SKILL.md" in names, sorted(list(names))[:10]
+        assert not [name for name in names if name.endswith("/SKILL.md") and name != "yao-meta-skill/SKILL.md"], names
         renamed_valid = verify_package(renamed_dir, TMP / "renamed_package_verification.json", TMP / "renamed_package_verification.md", renamed_root)
         assert renamed_valid["ok"], renamed_valid
+
+    nested_skill_dir = TMP / "nested-skill-dist"
+    shutil.copytree(valid_dir, nested_skill_dir)
+    with zipfile.ZipFile(nested_skill_dir / "yao-meta-skill.zip", "a", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("yao-meta-skill/examples/demo/SKILL.md", "---\nname: demo\n---\n")
+    nested = verify_package(nested_skill_dir, TMP / "nested_skill.json", TMP / "nested_skill.md")
+    assert nested["returncode"] == 2, nested
+    nested_payload = nested["payload"]
+    assert nested_payload["summary"]["nested_skill_entry_count"] == 1, nested_payload
+    assert any("Archive exposes only the root SKILL.md entrypoint" in item for item in nested_payload["failures"]), nested_payload
 
     unsafe_dir = TMP / "unsafe-dist"
     shutil.copytree(valid_dir, unsafe_dir)

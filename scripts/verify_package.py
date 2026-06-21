@@ -59,6 +59,11 @@ def generated_zip_entries(names: list[str]) -> list[str]:
     return generated
 
 
+def non_root_skill_entries(names: list[str], package_root: str) -> list[str]:
+    root_entry = f"{package_root}/SKILL.md"
+    return sorted(name for name in names if PurePosixPath(name).name == "SKILL.md" and name != root_entry)
+
+
 def required_targets(expectations: dict[str, Any], package_dir: Path) -> list[str]:
     targets = expectations.get("required_targets") or []
     if targets:
@@ -133,6 +138,7 @@ def verify_package(
             add_check(checks, failures, "archive-readable", False, f"Archive is not a readable zip: {display_path(archive_path)}")
         else:
             unsafe_entries = unsafe_zip_entries(archive_entries)
+            nested_skill_entries = non_root_skill_entries(archive_entries, package_root)
             required_entries = [
                 f"{package_root}/SKILL.md",
                 f"{package_root}/manifest.json",
@@ -141,6 +147,13 @@ def verify_package(
             add_check(checks, failures, "archive-safe-paths", not unsafe_entries, "Archive has no absolute or parent-traversal entries")
             for entry in required_entries:
                 add_check(checks, failures, f"archive-entry-{entry}", entry in archive_entries, f"Archive contains {entry}")
+            add_check(
+                checks,
+                failures,
+                "archive-single-skill-entrypoint",
+                not nested_skill_entries,
+                "Archive exposes only the root SKILL.md entrypoint",
+            )
             generated_entries = generated_zip_entries(archive_entries)
             add_check(checks, failures, "archive-excludes-generated", not generated_entries, "Archive excludes generated dist/, .previews/, and tests/tmp* contents")
     elif require_zip:
@@ -189,6 +202,7 @@ def verify_package(
             "archive_present": archive_path.exists(),
             "archive_sha256": archive_sha,
             "archive_entry_count": len(archive_entries),
+            "nested_skill_entry_count": len(non_root_skill_entries(archive_entries, package_root)),
             "failure_count": len(failures),
             "warning_count": len(warnings),
         },
@@ -213,6 +227,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Targets: `{summary['adapter_count']} / {summary['target_count']}` adapters present",
         f"- Archive present: `{summary['archive_present']}`",
         f"- Archive SHA256: `{summary['archive_sha256'] or 'n/a'}`",
+        f"- Nested SKILL.md entries: `{summary.get('nested_skill_entry_count', 0)}`",
         f"- Failures: `{summary['failure_count']}`",
         f"- Warnings: `{summary['warning_count']}`",
         "",

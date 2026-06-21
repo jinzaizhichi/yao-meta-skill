@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-31",
+  "generated_at": "2026-06-21",
   "targets": [
     {
       "label": "root",
@@ -8,11 +8,11 @@
       "budget_limit": 1000,
       "initial_tokens": 998,
       "skill_body_tokens": 805,
-      "deferred_resource_tokens": 530464,
+      "deferred_resource_tokens": 530871,
       "large_deferred_resource_dirs": [
         {
           "path": "scripts",
-          "estimated_tokens": 469161,
+          "estimated_tokens": 469568,
           "file_count": 155
         }
       ],
@@ -35,7 +35,7 @@
             ],
             "missing": [],
             "path": "scripts",
-            "estimated_tokens": 469161,
+            "estimated_tokens": 469568,
             "file_count": 155,
             "rationale": "Script resources are deterministic deferred tools, not initial-load prompt context."
           }

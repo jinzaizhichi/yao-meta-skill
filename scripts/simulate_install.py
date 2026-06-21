@@ -85,6 +85,11 @@ def top_level_dirs(names: list[str]) -> list[str]:
     return sorted(roots)
 
 
+def non_root_skill_entries(names: list[str], package_root: str) -> list[str]:
+    root_entry = f"{package_root}/SKILL.md"
+    return sorted(name for name in names if PurePosixPath(name).name == "SKILL.md" and name != root_entry)
+
+
 def add_check(checks: list[dict[str, str]], failures: list[str], check_id: str, passed: bool, detail: str) -> None:
     checks.append({"id": check_id, "status": "pass" if passed else "fail", "detail": detail})
     if not passed:
@@ -221,7 +226,15 @@ def simulate_install(skill_dir: Path, package_dir: Path, install_root: Path | No
                 add_check(checks, failures, "archive-readable", False, f"Archive is not a readable zip: {display_path(archive_path)}")
             else:
                 unsafe_entries = unsafe_zip_entries(archive_entries)
+                nested_skill_entries = non_root_skill_entries(archive_entries, package_root)
                 add_check(checks, failures, "archive-safe-paths", not unsafe_entries, "Archive has no absolute or parent-traversal entries")
+                add_check(
+                    checks,
+                    failures,
+                    "single-skill-entrypoint",
+                    not nested_skill_entries,
+                    "Installed package exposes only the root SKILL.md entrypoint",
+                )
                 roots = top_level_dirs(archive_entries)
                 add_check(checks, failures, "single-top-level", roots == [package_root], f"Archive top-level directory is {package_root}")
                 if not unsafe_entries and roots:
@@ -289,6 +302,7 @@ def simulate_install(skill_dir: Path, package_dir: Path, install_root: Path | No
             "summary": {
                 "archive_present": archive_path.exists(),
                 "archive_entry_count": len(archive_entries),
+                "nested_skill_entry_count": len(non_root_skill_entries(archive_entries, package_root)),
                 "archive_extracted": bool(installed_dir and installed_dir.exists()),
                 "entrypoint_loaded": bool(frontmatter),
                 "manifest_loaded": bool(source_manifest),
@@ -321,6 +335,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- OK: `{report['ok']}`",
         f"- Package directory: `{report['package_dir']}`",
         f"- Archive extracted: `{summary['archive_extracted']}`",
+        f"- Nested SKILL.md entries: `{summary.get('nested_skill_entry_count', 0)}`",
         f"- Entrypoint loaded: `{summary['entrypoint_loaded']}`",
         f"- Manifest loaded: `{summary['manifest_loaded']}`",
         f"- Interface loaded: `{summary['interface_loaded']}`",

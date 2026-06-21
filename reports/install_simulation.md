@@ -1,8 +1,9 @@
 # Install Simulation
 
 - OK: `True`
-- Package directory: `tests/tmp_review_studio/dist`
+- Package directory: `dist`
 - Archive extracted: `True`
+- Nested SKILL.md entries: `0`
 - Entrypoint loaded: `True`
 - Manifest loaded: `True`
 - Interface loaded: `True`
@@ -16,8 +17,9 @@
 
 | Check | Status | Detail |
 | --- | --- | --- |
-| `archive-present` | `pass` | Package archive exists: tests/tmp_review_studio/dist/yao-meta-skill.zip |
+| `archive-present` | `pass` | Package archive exists: dist/yao-meta-skill.zip |
 | `archive-safe-paths` | `pass` | Archive has no absolute or parent-traversal entries |
+| `single-skill-entrypoint` | `pass` | Installed package exposes only the root SKILL.md entrypoint |
 | `single-top-level` | `pass` | Archive top-level directory is yao-meta-skill |
 | `entrypoint-load` | `pass` | Installed SKILL.md frontmatter is readable |
 | `entrypoint-name` | `pass` | Installed SKILL.md name matches package directory |
